@@ -1,0 +1,67 @@
+= Groovy DSLs in 2016
+by Cédric Champeau (@CedricChampeau)
+2015-09-15
+:revnumber: {project-version}
+:example-caption!:
+ifndef::imagesdir[:imagesdir: images]
+ifndef::sourcedir[:sourcedir: ../java]
+:deckjs_transition: fade
+:navigation:
+:menu:
+:goto:
+:status:
+:adoctor: http://asciidoctor.org/[Asciidoctor]
+:gradle: http://gradle.org[Gradle]
+:deckjs: http://imakewebthings.com/deck.js/[deck.js]
+:deck2pdf: https://github.com/melix/deck2pdf[deck2pdf]
+
+== Who am I
+
+[cols="4a,1a"]
+|===
+|[source,groovy]
+----
+speaker {
+    name 'Cédric Champeau'
+    company 'Gradle Inc'
+    oss 'Apache Groovy committer',
+    successes (['Static type checker',
+                    'Static compilation',
+                    'Traits',
+                    'Markup template engine',
+                    'DSLs'])
+        failures Stream.of(bugs),
+        twitter '@CedricChampeau',
+        github 'melix',
+        extraDescription '''Groovy in Action 2 co-author
+Misc OSS contribs (Gradle plugins, deck2pdf, jlangdetect, ...)'''
+}
+----
+|image::GradleLogoReg.png[]
+image::groovy-logo.png[]
+
+|===
+
+== Agenda
+
+* Foo
+* Bar
+* Baz
+
+=== A Groovy script
+
+```groovy
+println "Hello, $args[0]"
+```
+
+
+== Questions
+
+image::qa.png[]
+
+== Thank you!
+
+* Slides and code : https://github.com/melix/
+* Groovy documentation : http://groovy-lang.org/documentation.html
+* Follow me: http://twitter.com/CedricChampeau[@CedricChampeau]
+

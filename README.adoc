@@ -1,0 +1,4 @@
+= Convention over configuration: The Gradle Way
+
+Slides for talk given at BordeauxJUG, May 5, 2015
+
