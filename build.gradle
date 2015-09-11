@@ -74,4 +74,4 @@ allprojects {
     apply plugin: 'idea'
 }
 apply from: 'gradle/github.gradle'
-apply from: 'gradle/checksum.gradle'
+
