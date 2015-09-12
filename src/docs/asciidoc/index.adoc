@@ -17,9 +17,7 @@ ifndef::sourcedir[:sourcedir: ../java]
 
 == Who am I
 
-[cols="4a,1a"]
-|===
-|[source,groovy]
+[source,groovy]
 ----
 speaker {
     name 'Cédric Champeau'
@@ -37,10 +35,8 @@ speaker {
 Misc OSS contribs (Gradle plugins, deck2pdf, jlangdetect, ...)'''
 }
 ----
-|image::GradleLogoReg.png[]
-image::groovy-logo.png[]
 
-|===
+image::GradleLogoReg.png[]
 
 == Domain Specific Languages
 
@@ -599,6 +595,12 @@ pages.each { page ->
 == Questions
 
 image::qa.png[]
+
+== We're hiring!
+
+http://gradle.org/gradle-jobs/
+
+image::GradleLogoLarge.png[]
 
 == Thank you!
 
