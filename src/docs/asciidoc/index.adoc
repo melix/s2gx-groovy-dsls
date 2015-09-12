@@ -42,18 +42,559 @@ image::groovy-logo.png[]
 
 |===
 
-== Agenda
+== Domain Specific Languages
 
-* Foo
-* Bar
-* Baz
+* Focused
+* Readable
+* Practical
+* (usually) embeddable
+* Examples: SQL, HTML, XSLT, Ant, ...
 
-=== A Groovy script
+=== Disclaimer
+
+This is an _opiniated_ talk about how a DSL designed with Apache Groovy should look like.
+
+image::terminator.jpg[]
+
+
+== Apache Groovy for DSLs
+
+* Concise, clean syntax
+* Supports scripting
+* Supports metaprogramming
+* Embeddable
+* Mature tooling: Eclipse, IntelliJ, Netbeans...
+
+== Some old Groovy DSLs
+
+=== Groovy SQL
 
 ```groovy
-println "Hello, $args[0]"
+sql.execute "insert into PROJECT (id, name, url) values ($map.id, $map.name, $map.url)"
 ```
 
+=== Grails dynamic finders
+
+```groovy
+def persons = Person.findByLastName('Stark')
+assert persons.findAll { it.alive }.isEmpty()
+```
+
+=== Spring Boot
+
+```groovy
+@EnableAutoConfiguration
+@ComponentScan("foo.bar")
+class Application {
+    static void main(String[] args){
+        new SpringApplication(Application).run(args)
+    }
+}
+```
+
+* Not strictly speaking a DSL
+* But can be converted into one
+
+=== Gradle task execution
+
+```groovy
+task(hello) << {
+    println "hello"
+}
+```
+vs
+
+```groovy
+task(hello) {
+    println "hello"
+}
+
+```
+
+=== Some thoughts
+
+* removing _semicolons_ is not designing a DSL
+* removing _parenthesis_ is not designing a DSL
+* *user experience* is important
+* *consistency* is important
+* Try to be idiomatic
+
+== Modern Apache Groovy DSLs
+
+=== Spock
+
+```groovy
+  setup:
+  def map = new HashMap()
+
+  when:
+  map.put(null, "elem")
+
+  then:
+  notThrown(NullPointerException)
+```
+
+=== Grails 3 where queries
+
+```groovy
+assert Person.findAll {
+   lastName == 'Stark' && alive
+}.isEmpty()
+```
+
+=== Gradle new model
+
+```groovy
+model {
+    components {
+        shared(CustomLibrary) {
+            javaVersions 6, 7
+        }
+        main(JvmLibrarySpec) {
+            targetPlatform 'java6'
+            targetPlatform 'java7'
+            sources {
+                java {
+                    dependencies {
+                        library 'shared'
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+=== Ratpack
+
+```groovy
+ratpack {
+    handlers {
+        get {
+            render "Hello World!"
+        }
+        get(":name") {
+            render "Hello $pathTokens.name!"
+        }
+    }
+}
+```
+
+=== Jenkins Job DSL
+
+```groovy
+job {
+    using 'TMPL-test'
+    name 'PROJ-integ-tests'
+    scm {
+        git(gitUrl)
+    }
+    triggers {
+        cron('15 1,13 * * *')
+    }
+    steps {
+        maven('-e clean integTest')
+    }
+}
+```
+
+=== MarkupTemplateEngine
+
+```groovy
+modelTypes = {
+   List<String> persons
+}
+
+html {
+    body {
+        ul {
+            persons.each { p ->
+                li(p.name)
+            }
+        }
+    }
+}
+```
+
+== Implementing modern DSLs
+
+=== The tools
+
+* Closures with support annotations (`@DelegatesTo`, ...)
+* Compilation customizers
+* AST transformations
+* Type checking extensions
+* Groovy Shell / Groovy Console
+
+=== Closures
+
+* Still at the core of most DSLs
+* `delegate` is very important:
+
+```groovy
+['Paris', 'Washington', 'Berlin'].collect { it.length() == 5 }
+```
+
+* do we really need `it`?
+
+=== Setting the delegate
+
+```groovy
+class  HelperExtension {
+    public static <T,U> List<U> myCollect(List<T> items, Closure<U> action) {
+       def clone = action.clone()
+       clone.resolveStrategy = Closure.DELEGATE_FIRST
+       def result = []
+       items.each {
+           clone.delegate = it
+           result << clone()
+       }
+       result
+    }
+}
+
+HelperExtension.myCollect(['Paris', 'Washington', 'Berlin']) { 
+    length() == 5 
+}
+```
+
+=== Convert it to an extension module
+
+* `META-INF`
+** `services`
+*** `org.codehaus.groovy.runtime.ExtensionModule`
+
+```
+moduleName=My extension module
+moduleVersion=1.0
+extensionClasses=path.to.HelperExtension
+```
+
+=== Convert it to an extension module
+
+* Consume it as if it was a regular Groovy method
+
+```groovy
+
+['Paris', 'Washington', 'Berlin'].myCollect {
+    length() == 5
+}
+```
+
+=== Declare the delegate type
+
+* Best IDE support
+* *Only* way to have static type checking
+
+```groovy
+public static <T,U> List<U> myCollect(
+    List<T> items, 
+    @DelegatesTo(FirstParam.FirstGenericType) Closure<U> action) {
+...
+}
+```
+
+== Removing ceremony
+
+* Is your DSL self-contained?
+* If so
+** Try to remove explicit imports
+** Avoid usage of the `new` keyword
+** Avoid usage of annotations
+
+=== Compilation customizers
+
+```groovy
+class WebServer {
+   static void serve(@DelegatesTo(ServerSpec) Closure cl) {
+       // ...
+   }
+}
+```
+=== Compilation customizers
+
+```groovy
+def importCustomizer = new ImportCustomizer()
+importCustomizer.addStaticStars 'com.acme.WebServer'
+
+def configuration = new CompilerConfiguration()
+configuration.addCompilationCustomizers(importCustomizer)
+
+def shell = new GroovyShell(configuration)
+shell.evaluate '''
+serve {
+   port 80
+   get('/foo') { ... }
+}
+'''
+```
+
+=== Compilation customizers
+
+* `ImportCustomizer`: automatically add imports to your scripts
+* `ASTTransformationCustomizer`: automatically apply AST transformations to your scripts
+* `SecureASTCustomizer`: restrict the grammar of the language
+* `SourceAwareCustomizer`: apply customizers based on the source file
+* See http://docs.groovy-lang.org/next/html/documentation/core-domain-specific-languages.html#compilation-customizers[docs for customizers]
+
+=== Avoiding imperative style
+
+* Use the `ServerSpec` style above
+* The closure should _configure_ the model
+* Execution _can_ be deferred
+
+=== Avoiding imperative style
+
+
+```groovy
+class WebServer {
+   static void serve(@DelegatesTo(ServerSpec) Closure cl) {
+       def spec = new ServerSpec()
+       cl.delegate = spec
+       cl.resolveStrategy = 'DELEGATE_FIRST'
+       cl()
+       def runner = new Runner()
+       runner.execute(spec)
+   }
+}
+```
+
+=== Avoiding imperative style
+
+```groovy
+class ServerSpec {
+   int port
+   void port(int port) { this.port = port }
+   void get(String path, @DelegatesTo(HandlerSpec) Closure spec) { ... }
+}
+```
+
+=== User-friendly immutable builders
+
+* Example from Gradle
+
+```groovy
+java {
+    dependencies {
+        library 'foo'
+        project 'bar' library 'main'
+    }
+}
+```
+
+* `SourceSet` has a `DependencySpecContainer`
+* `DependencySpecContainer` defines `project` and `library` methods
+* as well as a `getDependencies` method returning an *immutable view*
+
+=== User-friendly immutable builders
+
+```java
+public interface DependencySpecContainer {
+    DependencySpecBuilder project(String path);
+
+    DependencySpecBuilder library(String name);
+
+    Collection<DependencySpec> getDependencies();
+}
+```
+
+=== Immutable builders
+
+* A dependency spec is by default immutable
+
+```java
+public interface DependencySpec {
+
+    @Nullable
+    String getProjectPath();
+
+    @Nullable
+    String getLibraryName();
+}
+```
+
+=== Immutable builders
+
+* The builder specializes the spec interface
+
+```java
+public interface DependencySpecBuilder extends DependencySpec {
+
+    DependencySpecBuilder project(String path);
+
+
+    DependencySpecBuilder library(String name);
+
+    DependencySpec build();
+}
+```
+
+=== Immutable builders
+
+* Concrete implementation provides the builder
+
+```java
+public class DefaultDependencySpec implements DependencySpec {
+    private final String projectPath;
+    private final String libraryName;
+
+    // ...
+
+    public static class Builder implements DependencySpecBuilder {
+        private String projectPath;
+        private String libraryName;
+
+        @Override
+        public DependencySpecBuilder project(String path) {
+            projectPath = path;
+            return this;
+        }
+
+        @Override
+        public DependencySpecBuilder library(String name) {
+            libraryName = name;
+            return this;
+        }
+
+        @Override
+        public DependencySpec build() {
+            return new DefaultDependencySpec(libraryName, projectPath);
+        }
+
+        // ...
+    }
+}
+```
+
+=== Immutable builders
+
+* And the container stores a list of builders
+
+```java
+public class DefaultDependencySpecContainer implements DependencySpecContainer {
+
+    private final List<DefaultDependencySpec.Builder> builders = new LinkedList<DefaultDependencySpec.Builder>();
+
+    @Override
+    public DependencySpecBuilder project(final String path) {
+        return doCreate(new Action<DefaultDependencySpec.Builder>() {
+            @Override
+            public void execute(DefaultDependencySpec.Builder builder) {
+                builder.project(path);
+            }
+        });
+    }
+
+    @Override
+    public DependencySpecBuilder library(final String name) {
+        return doCreate(new Action<DefaultDependencySpec.Builder>() {
+            @Override
+            public void execute(DefaultDependencySpec.Builder builder) {
+                builder.library(name);
+            }
+        });
+    }
+
+    public Collection<DependencySpec> getDependencies() {
+        if (builders.isEmpty()) {
+            return Collections.emptySet();
+        }
+        return ImmutableSet.copyOf(Lists.transform(builders, new Function<DefaultDependencySpec.Builder, DependencySpec>() {
+            @Override
+            public DependencySpec apply(DefaultDependencySpec.Builder builder) {
+                return builder.build();
+            }
+        }));
+    }
+
+    private DefaultDependencySpec.Builder doCreate(Action<? super DefaultDependencySpec.Builder> action) {
+        DefaultDependencySpec.Builder builder = new DefaultDependencySpec.Builder();
+        action.execute(builder);
+        builders.add(builder);
+        return builder;
+    }
+}
+```
+
+== Type checking extensions
+
+=== Goals
+
+* Provide *early* feedback to the user
+* Type safety
+* Help the compiler understand your DSL
+
+=== Type checking extensions API
+
+* Event-based API
+* React to events such as _undefined variable_ or _method not found_
+* Developer instructs the type checker what to do
+
+```groovy
+methodNotFound { receiver, name, argList, argTypes, call ->
+    if (receiver==classNodeFor(String)
+            && name=='longueur'
+            && argList.size()==0) {
+        handled = true
+        return newMethod('longueur', classNodeFor(String))
+    }
+}
+```
+
+=== MarkupTemplateEngine example
+
+* Given the following template
+
+```groovy
+pages.each { page ->
+    p("Page title: $page.title")
+    p(page.text)
+}
+```
+
+* How do you make sure that `pages` is valid model type?
+* How do you notify the user that `page` doesn't have a `text` property?
+* How to make it *fast*?
+
+=== Solution
+
+* Declare the model types
+
+```groovy
+modelTypes = {
+    List<Page> pages
+}
+
+pages.each { page ->
+    p("Page title: $page.title")
+    p(page.text)
+}
+```
+
+* Implement a _type checking extension_
+
+=== MarkupTemplateEngine extension
+
+* Recognizes unresolved method calls
+** converts them into direct _methodMissing_ calls
+* Recognizes unresolved variables
+** checks if they are defined in the binding
+** if yes, instructs the type checker what the type is
+
+=== MarkupTemplateEngine extension
+
+* Applies `@CompileStatic` transparently
+* Performs post-type checking transformations
+** Don't do this at home!
+
+== What we learnt
+
+* Leverage the lean syntax of Groovy
+* Scoping improves readability
+* Use the _delegate_
+* Use `@DelegatesTo` and `@ClosureParams` for IDE/type checker support
+* Use imperative style as last resort
+* Help yourself (builders, immutable datastructures, ...)
 
 == Questions
 

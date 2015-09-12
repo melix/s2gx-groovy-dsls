@@ -21,15 +21,23 @@ body {
 
 .reveal {
   font-family: "proxima_nova_rgregular", "sans-serif";
-  font-size: 36px;
+  font-size: 32px;
   font-weight: normal;
   letter-spacing: -0.02em;
   color: #000000; }
 
 ::selection {
   color: white;
-  background: #aa2233;
+  background: #2661A8;
   text-shadow: none; }
+
+.frontlogo {
+   border: 0 !important;
+   box-shadow: 0 0 0px !important;
+   padding: 10px 10px 120px 10px !important;
+
+}
+
 
 /*********************************************
  * HEADERS
@@ -40,22 +48,33 @@ body {
 .reveal h4,
 .reveal h5,
 .reveal h6 {
+  font-size: 18px;
   margin: 0 0 20px 0;
-  color: #950000;
-  font-family: Domine, "sans-serif";
+  color: #0c3064;
+  font-family: "proxima_nova_rgregular", "sans-serif";
   line-height: 0.9em;
   letter-spacing: 0.02em;
-  
-  text-shadow: 2px 2px 2px #222222; }
+}
 
 .reveal h1 {
   text-shadow: 0 1px 0 #cccccc, 0 2px 0 #c9c9c9, 0 3px 0 #bbbbbb, 0 4px 0 #b9b9b9, 0 5px 0 #aaaaaa, 0 6px 1px rgba(0, 0, 0, 0.1), 0 0 5px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.3), 0 3px 5px rgba(0, 0, 0, 0.2), 0 5px 10px rgba(0, 0, 0, 0.25), 0 20px 20px rgba(0, 0, 0, 0.15); }
+
+.reveal h1 {
+   font-size: 54px;
+}
+.reveal h2 {
+   font-size: 42px;
+}
+
+.ulist {
+   text-align: left;
+}
 
 /*********************************************
  * LINKS
  *********************************************/
 .reveal a:not(.image) {
-  color: #aa2233;
+  color: #2661A8;
   text-decoration: none;
   -webkit-transition: color .15s ease;
   -moz-transition: color .15s ease;
@@ -88,7 +107,7 @@ body {
 
 .reveal a:hover img {
   background: rgba(255, 255, 255, 0.2);
-  border-color: #aa2233;
+  border-color: #2661A8;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.55); }
 
 /*********************************************
@@ -96,19 +115,19 @@ body {
  *********************************************/
 .reveal .controls div.navigate-left,
 .reveal .controls div.navigate-left.enabled {
-  border-right-color: #aa2233; }
+  border-right-color: #2661A8; }
 
 .reveal .controls div.navigate-right,
 .reveal .controls div.navigate-right.enabled {
-  border-left-color: #aa2233; }
+  border-left-color: #2661A8; }
 
 .reveal .controls div.navigate-up,
 .reveal .controls div.navigate-up.enabled {
-  border-bottom-color: #aa2233; }
+  border-bottom-color: #2661A8; }
 
 .reveal .controls div.navigate-down,
 .reveal .controls div.navigate-down.enabled {
-  border-top-color: #aa2233; }
+  border-top-color: #2661A8; }
 
 .reveal .controls div.navigate-left.enabled:hover {
   border-right-color: #dd5566; }
@@ -129,7 +148,7 @@ body {
   background: rgba(0, 0, 0, 0.2); }
 
 .reveal .progress span {
-  background: #aa2233;
+  background: #2661A8;
   -webkit-transition: width 800ms cubic-bezier(0.26, 0.86, 0.44, 0.985);
   -moz-transition: width 800ms cubic-bezier(0.26, 0.86, 0.44, 0.985);
   -ms-transition: width 800ms cubic-bezier(0.26, 0.86, 0.44, 0.985);
@@ -140,12 +159,11 @@ body {
  * SLIDE NUMBER
  *********************************************/
 .reveal .slide-number {
-  color: #aa2233; }
+  color: #2661A8; }
 
 .reveal p {
   font-weight: 300;
  }
-
 .reveal h1,
 .reveal h2,
 .reveal h3,
@@ -170,3 +188,24 @@ body {
 
 .reveal small code {
   vertical-align: baseline; }
+
+
+#header {
+   position:absolute;
+   top:0;
+   width:100%;
+   height:20px;
+   padding: 0;
+   background-color: #9CD179;
+}
+
+#footer {
+   position:absolute;
+   bottom:0;
+   width:100%;
+   height:40px;
+   padding: 10px;
+   background-image: url('background.jpg');
+   color:#ffffff;
+}
+
