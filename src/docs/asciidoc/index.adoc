@@ -205,7 +205,7 @@ html {
     body {
         ul {
             persons.each { p ->
-                li(p.name)
+                li p.name
             }
         }
     }
@@ -285,7 +285,8 @@ extensionClasses=path.to.HelperExtension
 ```groovy
 public static <T,U> List<U> myCollect(
     List<T> items, 
-    @DelegatesTo(FirstParam.FirstGenericType) Closure<U> action) {
+    @DelegatesTo(FirstParam.FirstGenericType) 
+    Closure<U> action) {
 ...
 }
 ```
@@ -335,12 +336,6 @@ serve {
 
 === Avoiding imperative style
 
-* Use the `ServerSpec` style above
-* The closure should _configure_ the model
-* Execution _can_ be deferred
-
-=== Avoiding imperative style
-
 
 ```groovy
 class WebServer {
@@ -364,6 +359,12 @@ class ServerSpec {
    void get(String path, @DelegatesTo(HandlerSpec) Closure spec) { ... }
 }
 ```
+
+=== Avoiding imperative style
+
+* Use the `ServerSpec` style above
+* The closure should _configure_ the model
+* Execution _can_ be deferred
 
 === User-friendly immutable builders
 
@@ -548,7 +549,7 @@ pages.each { page ->
 }
 ```
 
-* How do you make sure that `pages` is valid model type?
+* How do you make sure that `pages` is a valid model type?
 * How do you notify the user that `page` doesn't have a `text` property?
 * How to make it *fast*?
 
@@ -582,6 +583,30 @@ pages.each { page ->
 * Applies `@CompileStatic` transparently
 * Performs post-type checking transformations
 ** Don't do this at home!
+
+=== (Optional) @ClosureParams
+
+* For type checking/static compilation
+
+```groovy
+['a','b','c'].eachWithIndex { str, idx ->
+  ...
+}
+
+```
+
+=== (Optional) @ClosureParams
+
+```java
+public static <T> Collection<T> eachWithIndex(
+   Collection<T> self, 
+   @ClosureParams(value=FromString.class, options="T,Integer") 
+   Closure closure) {
+   ...
+}
+```
+
+Check out the http://docs.groovy-lang.org/latest/html/documentation/#_the_code_closureparams_code_annotation[documentation] for more details.
 
 == What we learnt
 
