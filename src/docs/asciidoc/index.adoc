@@ -298,6 +298,33 @@ public static <T,U> List<U> myCollect(
 ** Try to remove explicit imports
 ** Avoid usage of the `new` keyword
 ** Avoid usage of annotations
+** Embrace SAM types
+
+=== SAM what?
+
+This is ugly:
+
+```groovy
+
+handle(new Handler() {
+    @Override
+    void handle(String message) {
+       println message
+    }
+})
+```
+
+=== SAM what?
+
+This is cool:
+
+```groovy
+handle {
+   println message
+}
+```
+
+SAM type coercion works for both interfaces and abstract classes.
 
 === Compilation customizers
 
